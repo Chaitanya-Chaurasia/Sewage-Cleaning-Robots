@@ -1,0 +1,115 @@
+# include <Servo.h>
+
+int leftMotorsPin1 = 11;
+int leftMotorsPin2 = 10;
+int rightMotorsPin1 = 6;
+int rightMotorsPin2 = 5;
+
+int flexpin = A0;
+int flexValue;
+
+float distFront, distLeft, distRight ;
+
+int trigFront = 13, echoFront = 12;
+int trigLeft  = 9 , echoLeft  = 8 ;
+int trigRight = 4 , echoRight = 3 ;
+
+Servo sanitizer;
+
+
+void setup()
+{
+  pinMode(leftMotorsPin1,  OUTPUT);
+  pinMode(leftMotorsPin2,  OUTPUT);
+  pinMode(rightMotorsPin1, OUTPUT);
+  pinMode(rightMotorsPin2, OUTPUT);
+  pinMode(trigFront, OUTPUT);
+  pinMode(trigLeft , OUTPUT);
+  pinMode(trigRight, OUTPUT);
+  pinMode(echoFront, INPUT);
+  pinMode(echoLeft , INPUT);
+  pinMode(echoRight, INPUT);
+  sanitizer.attach(2);
+  Serial.begin(9600);
+}
+
+void loop() {
+  
+  flexValue = analogRead(flexpin);
+  Serial.println("Resistance is :" + flexValue);
+  
+  if (flexValue >= 200) {
+    
+    sanitize();
+    distFront = checkDist(trigFront, echoFront);
+
+    if (distFront >= 20){
+
+      go_forward();
+      delay(500);
+    }else {
+      distLeft  = checkDist(trigLeft, echoLeft);
+      distRight = checkDist(trigRight, echoRight);
+
+      if (distLeft >= distRight){
+         turn_left();
+         delay(1000);
+      }else {
+         turn_right();
+         delay(500);
+      }
+    }
+  }else {    
+    go_reverse();
+ 
+  }
+  
+}
+
+float checkDist( int trig, int echo) {
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+  digitalWrite
+  float dist = pulseIn(echo,HIGH)/148.1;
+  return dist;
+}            
+void go_forward(){
+  digitalWrite(leftMotorsPin1, HIGH);
+  digitalWrite(leftMotorsPin2, LOW);
+  digitalWrite(rightMotorsPin1, HIGH);
+  digitalWrite(rightMotorsPin2, LOW);
+  Serial.println("Going forward");
+}
+void turn_left(){
+  digitalWrite(leftMotorsPin1, LOW);
+  digitalWrite(leftMotorsPin2, LOW);
+  digitalWrite(rightMotorsPin1, HIGH);
+  digitalWrite(rightMotorsPin2, LOW);
+  Serial.println("Going left");
+}
+void turn_right(){
+  digitalWrite(leftMotorsPin1, HIGH);
+  digitalWrite(leftMotorsPin2, LOW);
+  digitalWrite(rightMotorsPin1, LOW);
+  digitalWrite(rightMotorsPin2, LOW);
+  Serial.println("Going right");
+}
+
+void sanitize() {
+  sanitizer.write(0);
+  delay(400);
+  sanitizer.write(90);
+  delay(400);
+  Serial.println("Sanitizing");
+}
+
+void go_reverse() {
+  digitalWrite(leftMotorsPin1, LOW);
+  digitalWrite(leftMotorsPin2, HIGH);
+  digitalWrite(rightMotorsPin1, LOW);
+  digitalWrite(rightMotorsPin2, HIGH);
+  Serial.println("Going reverse");
+}
